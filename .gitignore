@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# SAS work files and logs
+*.log
+*.lst
+*.sas7bdat
+*.sas7bcat
+*.sas7bndx
+
+# Output (generated at runtime — not source-controlled)
+output/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
