@@ -22,7 +22,7 @@ options nodate nonumber ls=180 ps=65 mprint symbolgen msglevel=i;
    ----------------------------------------------------------------------- */
 %let PROJ_ROOT = %sysget(DOMINO_PROJECT_ROOT);
 %if "&PROJ_ROOT." = "" %then
-  %let PROJ_ROOT = /Users/wasanthagamage/Documents/repos/AZ/altair;
+  %let PROJ_ROOT = /mnt/code;
 %put NOTE: [00_run_all] Project root: &PROJ_ROOT.;
 
 %let OUT_DIR  = &PROJ_ROOT./output;
