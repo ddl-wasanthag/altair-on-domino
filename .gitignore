@@ -17,3 +17,8 @@ output/
 .vscode/
 .idea/
 *.swp
+
+
+*.ipynb_checkpoints
+*.Trash-12574/
+
