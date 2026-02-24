@@ -101,31 +101,45 @@ run;
 /* Sort required for BY-group processing in PROC FREQ */
 proc sort data=WORK._orr_input; by TRTARM; run;
 
-/* Get exact CI per arm — suppress raw PROC FREQ output from the report */
-ods exclude all;
-ods output BinomialCLs=WORK._orr_ci;
-proc freq data=WORK._orr_input;
-  by TRTARM;
-  tables RESPONSE / binomial(p=0.5 level="1") alpha=0.05;
-  exact binomial;
-run;
-ods output close;
-ods exclude none;
-
-/* Reshape CI output */
+/* Compute Clopper-Pearson exact 95% CI directly using BETAINV.
+   Formula: Lower = BETAINV(0.025, x, n-x+1)
+            Upper = BETAINV(0.975, x+1, n-x)
+   This avoids relying on PROC FREQ ODS table names (which vary by engine). */
 proc sql noprint;
   select
-    sum(case when TRTARM="TRTMT A" then Proportion else 0 end),
-    sum(case when TRTARM="TRTMT A" then LowerCL    else 0 end),
-    sum(case when TRTARM="TRTMT A" then UpperCL    else 0 end),
-    sum(case when TRTARM="TRTMT B" then Proportion else 0 end),
-    sum(case when TRTARM="TRTMT B" then LowerCL    else 0 end),
-    sum(case when TRTARM="TRTMT B" then UpperCL    else 0 end)
-  into :_orr_a_p trimmed, :_orr_a_l trimmed, :_orr_a_u trimmed,
-       :_orr_b_p trimmed, :_orr_b_l trimmed, :_orr_b_u trimmed
-  from WORK._orr_ci
-  where Type = "Exact";
+    sum(case when TRTARM="TRTMT A" and RESPONSE=1 then 1 else 0 end),
+    sum(case when TRTARM="TRTMT A" then 1 else 0 end),
+    sum(case when TRTARM="TRTMT B" and RESPONSE=1 then 1 else 0 end),
+    sum(case when TRTARM="TRTMT B" then 1 else 0 end)
+  into :_x_a trimmed, :_n_a_orr trimmed,
+       :_x_b trimmed, :_n_b_orr trimmed
+  from WORK._orr_input;
 quit;
+
+data WORK._orr_ci_calc;
+  x_a = &_x_a.; n_a = &_n_a_orr.;
+  x_b = &_x_b.; n_b = &_n_b_orr.;
+
+  p_a = x_a / n_a;
+  /* Clopper-Pearson lower/upper for arm A */
+  if x_a = 0 then lo_a = 0;
+  else lo_a = betainv(0.025, x_a,   n_a - x_a + 1);
+  if x_a = n_a then hi_a = 1;
+  else hi_a = betainv(0.975, x_a+1, n_a - x_a);
+
+  p_b = x_b / n_b;
+  if x_b = 0 then lo_b = 0;
+  else lo_b = betainv(0.025, x_b,   n_b - x_b + 1);
+  if x_b = n_b then hi_b = 1;
+  else hi_b = betainv(0.975, x_b+1, n_b - x_b);
+
+  call symputx('_orr_a_p', put(p_a,  best12.), 'G');
+  call symputx('_orr_a_l', put(lo_a, best12.), 'G');
+  call symputx('_orr_a_u', put(hi_a, best12.), 'G');
+  call symputx('_orr_b_p', put(p_b,  best12.), 'G');
+  call symputx('_orr_b_l', put(lo_b, best12.), 'G');
+  call symputx('_orr_b_u', put(hi_b, best12.), 'G');
+run;
 
 /* ORR rows */
 data WORK._orr_display;

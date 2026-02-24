@@ -182,7 +182,7 @@ data WORK.T14_1_1_DATA;
       WORK._cat_display_AGEGR1
       WORK._cat_display_SEX
       WORK._cat_display_RACE
-      WORK._cat_display_ECOG;
+      WORK._cat_display_ECOG_C;
 run;
 
 proc sort data=WORK.T14_1_1_DATA; by SORTORD; run;

@@ -87,8 +87,7 @@ proc sgpanel data=WORK._wf_plot;
                    group=BOR_COLOR
                    groupdisplay=cluster
                    fillattrs=(transparency=0.1)
-                   nooutline
-                   tip=(USUBJID BESTPCHG BOR TRTARM);
+                   nooutline;
 
   refline -30 / axis=y
                 lineattrs=(color=cx2CA02C pattern=dash thickness=1.5px)
@@ -110,7 +109,7 @@ proc sgpanel data=WORK._wf_plot;
   colaxis label="Subject (ranked by % change)" display=(novalues noticks nolabel);
 
   keylegend / title="Best Overall Response (RECIST 1.1)"
-              location=inside position=bottomleft;
+              position=bottomleft;
 run;
 
 ods graphics off;
@@ -142,8 +141,7 @@ proc sgpanel data=WORK._spider_data;
   series x=TRNOMINAL y=PCHG_BL / group=USUBJID
                                   lineattrs=(thickness=1.5px)
                                   markers
-                                  markerattrs=(symbol=circlefilled size=5px)
-                                  tip=(USUBJID VISIT PCHG_BL);
+                                  markerattrs=(symbol=circlefilled size=5px);
 
   refline -30 / axis=y
                 lineattrs=(color=cx2CA02C pattern=dash thickness=1.5px)
@@ -164,7 +162,7 @@ proc sgpanel data=WORK._spider_data;
           values=(0 to 240 by 56)
           valuesdisplay=("0" "8" "16" "24" "32" "40");
 
-  keylegend / display=none; /* individual subject lines — suppress legend */
+  keylegend / exclude=(""); /* individual subject lines — suppress legend */
 run;
 
 ods graphics off;

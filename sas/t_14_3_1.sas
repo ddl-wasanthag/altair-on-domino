@@ -119,7 +119,7 @@ run;
 %tfl_footnote(
   pgmname = t_14_3_1.sas,
   extra1  = %str(AE = Adverse Event; SAE = Serious Adverse Event; d/c = Discontinuation.),
-  extra2  = %str(Treatment-related includes "Related" and "Possibly Related" per investigator assessment.
+  extra2  = %str(Treatment-related includes Related and Possibly Related per investigator assessment.
                          CTCAE v5.0 grading. Subjects counted once per category at the maximum grade.)
 );
 

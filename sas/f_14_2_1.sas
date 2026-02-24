@@ -28,26 +28,28 @@ run;
 
 /* -----------------------------------------------------------------------
    Get median OS by arm for legend annotation — suppress from report output
+   Use outsurv= to capture survival estimates, then derive median manually.
+   (Altair SLC PROC LIFETEST ODS table name for quartiles may differ.)
    ----------------------------------------------------------------------- */
 ods exclude all;
-ods output Quartiles=WORK._km_quartiles;
-proc lifetest data=WORK._os_plot method=km;
+proc lifetest data=WORK._os_plot method=km
+              outsurv=WORK._km_surv_med;
   time OS_MONTHS * OS_CNSR(1);
   strata TRTARM;
 run;
-ods output close;
 ods exclude none;
 
+/* Derive median OS: last time point where Survival >= 0.5 per arm */
 proc sql noprint;
-  select put(Estimate,5.1)
+  select put(max(OS_MONTHS), 5.1)
   into :_med_a trimmed
-  from WORK._km_quartiles
-  where TRTARM="TRTMT A" and Percent=50;
+  from WORK._km_surv_med
+  where TRTARM="TRTMT A" and SURVIVAL >= 0.5;
 
-  select put(Estimate,5.1)
+  select put(max(OS_MONTHS), 5.1)
   into :_med_b trimmed
-  from WORK._km_quartiles
-  where TRTARM="TRTMT B" and Percent=50;
+  from WORK._km_surv_med
+  where TRTARM="TRTMT B" and SURVIVAL >= 0.5;
 quit;
 
 %let _med_a = %sysfunc(coalescec(&_med_a., NR)); /* NR = Not Reached */
@@ -78,10 +80,7 @@ ods graphics on / reset=all
 
 proc lifetest data=WORK._os_plot
               method=km
-              plots=survival(atrisk(maxlen=10)
-                             nocensor
-                             cb=hw
-                             test)
+              plots=survival(atrisk)
               outsurv=WORK._km_surv_out;
   time OS_MONTHS * OS_CNSR(1);
   strata TRTARM / test=logrank;

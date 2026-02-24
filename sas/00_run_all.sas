@@ -87,7 +87,7 @@ ods _all_ close;
 
 ods html   path="&OUT_DIR."
            file="oncology_poc_tfls_&_logtag..html"
-           style=HTMLBlue
+           style=Default
            gpath="&OUT_DIR."
            (url=none)
            options(pagebreakhtml="yes");
