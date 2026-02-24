@@ -174,7 +174,7 @@ run;
 %cat_block(var=AGEGR1, label=Age Group,              sortstart=20);
 %cat_block(var=SEX,    label=Sex,                    sortstart=30);
 %cat_block(var=RACE,   label=Race,                   sortstart=40);
-%cat_block(var=ECOG,   label=ECOG Performance Status,sortstart=50);
+%cat_block(var=ECOG_C, label=ECOG Performance Status,sortstart=50);
 
 /* Stack all blocks */
 data WORK.T14_1_1_DATA;

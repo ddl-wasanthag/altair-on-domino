@@ -61,11 +61,11 @@ data WORK.DM;
   set WORK.DM_RAW;
 
   /* Derive survival time in days from randomisation to death or last contact.
-     PROC IMPORT reads date columns as character (ISO 8601 strings) from CSV.
-     Convert each using input() with yymmdd10. informat. */
-  RANDDATE_DT  = input(strip(RANDDATE), yymmdd10.);
-  RFSTDTC_DT   = input(strip(RFSTDTC),  yymmdd10.);
-  RFENDTC_DT   = input(strip(RFENDTC),  yymmdd10.);
+     Altair SLC PROC IMPORT automatically applies YYMMDD10. informat to
+     date-like columns and stores them as numeric SAS dates — assign directly. */
+  RANDDATE_DT  = RANDDATE;
+  RFSTDTC_DT   = RFSTDTC;
+  RFENDTC_DT   = RFENDTC;
 
   /* Overall survival (days) */
   OS_DAYS = RFENDTC_DT - RFSTDTC_DT;
@@ -79,12 +79,17 @@ data WORK.DM;
   else if 55 <= AGE < 65 then AGEGR1 = "55-64";
   else                     AGEGR1 = ">=65";
 
+  /* ECOG is read as numeric by PROC IMPORT — create a character version
+     for use in categorical display tables */
+  ECOG_C = put(ECOG, 1.);
+
   label
     USUBJID  = "Unique Subject Identifier"
     AGE      = "Age at Randomisation (years)"
     SEX      = "Sex"
     RACE     = "Race"
     ECOG     = "ECOG Performance Status"
+    ECOG_C   = "ECOG Performance Status"
     TRTARM   = "Treatment Arm"
     OS_DAYS  = "Overall Survival Duration (days)"
     OS_CNSR  = "OS Censoring Flag (0=Event, 1=Censored)"
@@ -140,7 +145,8 @@ data WORK.TR;
   else if PCHG_BL >= 20             then RECIST_RESP = "PD";  /* Progressive Disease   */
   else                                    RECIST_RESP = "SD";  /* Stable Disease        */
 
-  TRDTC_DT = input(TRDTC, yymmdd10.);
+  /* TRDTC already a numeric SAS date — assign directly */
+  TRDTC_DT = TRDTC;
 
   label
     USUBJID    = "Unique Subject Identifier"
@@ -175,7 +181,8 @@ data WORK.AE;
   set WORK.AE_RAW;
 
   /* Convert grade to numeric */
-  AETOXGR_N = input(AETOXGR, best.);
+  /* AETOXGR already numeric — assign directly */
+  AETOXGR_N = AETOXGR;
 
   /* High-grade flag (Grade 3+) */
   if AETOXGR_N >= 3 then HGAE_FL = "Y";

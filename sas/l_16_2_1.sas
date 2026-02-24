@@ -35,9 +35,10 @@ data WORK._ae_listing;
   if inAE and inADSL and AESER = "Y";
 
   /* Format dates for display */
+  /* AESTDTC/AEENDTC are numeric SAS dates — format to character for display */
   length AESTDTC_D AEENDTC_D $12;
-  AESTDTC_D = ifc(AESTDTC ne "", AESTDTC, "Ongoing");
-  AEENDTC_D = ifc(AEENDTC ne "", AEENDTC, "Ongoing");
+  AESTDTC_D = ifc(AESTDTC ne ., put(AESTDTC, date9.), "Ongoing");
+  AEENDTC_D = ifc(AEENDTC ne ., put(AEENDTC, date9.), "Ongoing");
 
   /* Shorten outcome for display */
   length AEOUT_S $30;
@@ -51,13 +52,14 @@ data WORK._ae_listing;
 
   /* Grade description */
   length GRADE_DESC $25;
-  select (AETOXGR);
-    when ("1") GRADE_DESC = "Grade 1 (Mild)";
-    when ("2") GRADE_DESC = "Grade 2 (Moderate)";
-    when ("3") GRADE_DESC = "Grade 3 (Severe)";
-    when ("4") GRADE_DESC = "Grade 4 (Life-Threatening)";
-    when ("5") GRADE_DESC = "Grade 5 (Fatal)";
-    otherwise  GRADE_DESC = "Unknown";
+  /* AETOXGR_N is numeric — use numeric comparisons */
+  select (AETOXGR_N);
+    when (1) GRADE_DESC = "Grade 1 (Mild)";
+    when (2) GRADE_DESC = "Grade 2 (Moderate)";
+    when (3) GRADE_DESC = "Grade 3 (Severe)";
+    when (4) GRADE_DESC = "Grade 4 (Life-Threatening)";
+    when (5) GRADE_DESC = "Grade 5 (Fatal)";
+    otherwise GRADE_DESC = "Unknown";
   end;
 
   label
@@ -159,8 +161,8 @@ data WORK._deaths_listing;
   where DTHFL = "Y";
 
   /* Format death date */
-  if DTHDTC ne "" then
-    DTHDTC_D = input(DTHDTC, yymmdd10.);
+  /* DTHDTC is a numeric SAS date — assign directly */
+  if DTHDTC ne . then DTHDTC_D = DTHDTC;
   format DTHDTC_D date9.;
 
   label

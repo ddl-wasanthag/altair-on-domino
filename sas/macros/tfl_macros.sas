@@ -42,7 +42,7 @@
   /* Resolve project root (Domino vs local) */
   %let _PROJ_ROOT = %sysget(DOMINO_PROJECT_ROOT);
   %if "&_PROJ_ROOT." = "" %then
-    %let _PROJ_ROOT = /Users/wasanthagamage/Documents/repos/AZ/altair;
+    %let _PROJ_ROOT = /mnt/code;
 
   /* Derive population N counts from ADSL */
   %if %sysfunc(exist(WORK.ADSL)) %then %do;

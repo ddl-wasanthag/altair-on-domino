@@ -98,6 +98,9 @@ data WORK._orr_input;
   RESPONSE = (RESP_FL = "Y"); /* 1=responder */
 run;
 
+/* Sort required for BY-group processing in PROC FREQ */
+proc sort data=WORK._orr_input; by TRTARM; run;
+
 /* Get exact CI per arm — suppress raw PROC FREQ output from the report */
 ods exclude all;
 ods output BinomialCLs=WORK._orr_ci;
