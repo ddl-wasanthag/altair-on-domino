@@ -35,10 +35,9 @@ title "STUDY01 - Oncology POC: Data Preparation";
     %put NOTE: Running on Domino (legacy path) - using: &DATA_PATH.;
   %end;
   %else %do;
-    %let _proj = %sysget(DOMINO_PROJECT_ROOT);
-    %if "&_proj." ne "" %then %let DATA_PATH = &_proj./data;
-    %else %let DATA_PATH = /Users/wasanthagamage/Documents/repos/AZ/altair/data;
-    %put NOTE: Running locally - using path: &DATA_PATH.;
+    /* Fallback: data uploaded directly into the Domino project files */
+    %let DATA_PATH = %sysget(DOMINO_PROJECT_ROOT)/data;
+    %put NOTE: Dataset mount not found - falling back to project data folder: &DATA_PATH.;
   %end;
 %mend set_data_path;
 
