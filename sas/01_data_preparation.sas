@@ -17,27 +17,30 @@ options nodate nonumber ls=180 ps=65 mprint symbolgen;
 title "STUDY01 - Oncology POC: Data Preparation";
 
 /* -----------------------------------------------------------------------
-   MACRO: Resolve Domino dataset path.
+   MACRO: Resolve SDTM input data path.
    Checks mount paths in priority order:
-     1. /mnt/data/<dataset_name>/       <- Domino dataset (current environment)
-     2. /domino/datasets/local/<name>/  <- Domino dataset (legacy mount path)
-     3. <DOMINO_PROJECT_ROOT>/data/     <- files uploaded directly to project
-     4. Local development fallback
+     1. /mnt/data/oncology_altair_poc/sdtm/  <- Domino dataset (standard)
+     2. /mnt/data/oncology_altair_poc/        <- Domino dataset (flat, no subfolders)
+     3. /domino/datasets/local/oncology_poc/sdtm/ <- legacy mount path
+     4. <DOMINO_PROJECT_ROOT>/sdtm/           <- files uploaded to project
    ----------------------------------------------------------------------- */
 %macro set_data_path;
   %global DATA_PATH;
-  %if %sysfunc(fileexist(/mnt/data/oncology_altair_poc/patients.csv)) %then %do;
-    %let DATA_PATH = /mnt/data/oncology_altair_poc;
-    %put NOTE: Running on Domino - using dataset mount path: &DATA_PATH.;
+  %if %sysfunc(fileexist(/mnt/data/oncology_altair_poc/sdtm/patients.csv)) %then %do;
+    %let DATA_PATH = /mnt/data/oncology_altair_poc/sdtm;
+    %put NOTE: SDTM input path: &DATA_PATH.;
   %end;
-  %else %if %sysfunc(fileexist(/domino/datasets/local/oncology_poc/patients.csv)) %then %do;
-    %let DATA_PATH = /domino/datasets/local/oncology_poc;
-    %put NOTE: Running on Domino (legacy path) - using: &DATA_PATH.;
+  %else %if %sysfunc(fileexist(/mnt/data/oncology_altair_poc/patients.csv)) %then %do;
+    %let DATA_PATH = /mnt/data/oncology_altair_poc;
+    %put NOTE: SDTM input path (flat): &DATA_PATH.;
+  %end;
+  %else %if %sysfunc(fileexist(/domino/datasets/local/oncology_poc/sdtm/patients.csv)) %then %do;
+    %let DATA_PATH = /domino/datasets/local/oncology_poc/sdtm;
+    %put NOTE: SDTM input path (legacy): &DATA_PATH.;
   %end;
   %else %do;
-    /* Fallback: data uploaded directly into the Domino project files */
-    %let DATA_PATH = %sysget(DOMINO_PROJECT_ROOT)/data;
-    %put NOTE: Dataset mount not found - falling back to project data folder: &DATA_PATH.;
+    %let DATA_PATH = %sysget(DOMINO_PROJECT_ROOT)/sdtm;
+    %put NOTE: SDTM input path (project fallback): &DATA_PATH.;
   %end;
 %mend set_data_path;
 

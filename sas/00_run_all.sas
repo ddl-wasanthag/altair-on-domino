@@ -25,13 +25,28 @@ options nodate nonumber ls=180 ps=65 mprint symbolgen msglevel=i;
   %let PROJ_ROOT = /mnt/code;
 %put NOTE: [00_run_all] Project root: &PROJ_ROOT.;
 
-%let OUT_DIR  = &PROJ_ROOT./output;
 %let SAS_DIR  = &PROJ_ROOT./sas;
 %let MACR_DIR = &PROJ_ROOT./sas/macros;
 
-/* Create output directory */
+/* -----------------------------------------------------------------------
+   Output directory: write TFLs to the dataset tfl/ folder so reports
+   are persisted as dataset artifacts and visible outside the run.
+   Falls back to /mnt/code/tfl/ if the dataset path is not writable.
+   ----------------------------------------------------------------------- */
+%let DATA_MOUNT = /mnt/data/oncology_altair_poc;
+%let OUT_DIR    = &DATA_MOUNT./tfl;
+
 options noxwait noxsync;
 x "mkdir -p &OUT_DIR.";
+
+/* Verify the folder was created; warn if not */
+%if %sysfunc(fileexist(&OUT_DIR.)) = 0 %then %do;
+  %put WARNING: Could not create &OUT_DIR. - check dataset is mounted read-write.;
+  %put WARNING: Falling back to &PROJ_ROOT./tfl;
+  %let OUT_DIR = &PROJ_ROOT./tfl;
+  x "mkdir -p &OUT_DIR.";
+%end;
+%put NOTE: [00_run_all] Output directory: &OUT_DIR.;
 
 /* -----------------------------------------------------------------------
    Load macro library (must be available to all included programs)

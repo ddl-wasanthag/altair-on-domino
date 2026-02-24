@@ -12,23 +12,34 @@ efficacy and safety outputs using standard SAS procedures.
 ## Repository Structure
 
 ```
-altair/
-├── data/                          # Synthetic oncology datasets (Domino Dataset source)
+altair/                            # Git repo — code and source data
+├── sdtm/                          # CDISC SDTM-style input datasets
 │   ├── patients.csv               # Patient demographics, treatment arm, survival
 │   ├── tumor_measurements.csv     # RECIST target lesion sum-of-diameters over time
 │   └── adverse_events.csv         # CTCAE adverse events with grade and relationship
 │
 ├── sas/
 │   ├── 00_run_all.sas             # Master driver — runs all programs in sequence
-│   ├── 01_data_preparation.sas    # Reads Domino dataset CSVs, builds analysis datasets
+│   ├── 01_data_preparation.sas    # Reads SDTM CSVs, builds analysis datasets
 │   ├── 02_efficacy_analysis.sas   # ORR, waterfall plot, Kaplan-Meier OS curves
-│   └── 03_safety_summary.sas      # AE incidence, grade profile, SAE listing
-│
-├── output/                        # Generated reports (created at runtime)
-│   ├── oncology_poc_report.html
-│   └── oncology_poc_report.pdf
+│   ├── 03_safety_summary.sas      # AE incidence, grade profile, SAE listing
+│   ├── t_14_1_1.sas  ...          # ICH E3 TFL programs (PROC REPORT)
+│   └── macros/tfl_macros.sas      # Shared header/footer/utility macros
 │
 └── README.md
+```
+
+### Domino Dataset layout (`oncology_altair_poc`)
+
+```
+/mnt/data/oncology_altair_poc/     # Domino dataset mount point
+├── sdtm/                          # SDTM input CSVs (upload from sdtm/ above)
+│   ├── patients.csv
+│   ├── tumor_measurements.csv
+│   └── adverse_events.csv
+└── tfl/                           # TFL outputs — written at runtime
+    ├── oncology_poc_tfls.html
+    └── oncology_poc_tfls.pdf
 ```
 
 ---
