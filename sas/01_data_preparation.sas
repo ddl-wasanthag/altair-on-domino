@@ -18,19 +18,23 @@ title "STUDY01 - Oncology POC: Data Preparation";
 
 /* -----------------------------------------------------------------------
    MACRO: Resolve Domino dataset path.
-   On Domino, datasets are mounted at /domino/datasets/local/<dataset_name>/
-   For local testing outside Domino, fall back to the project data folder.
+   Checks mount paths in priority order:
+     1. /mnt/data/<dataset_name>/       <- Domino dataset (current environment)
+     2. /domino/datasets/local/<name>/  <- Domino dataset (legacy mount path)
+     3. <DOMINO_PROJECT_ROOT>/data/     <- files uploaded directly to project
+     4. Local development fallback
    ----------------------------------------------------------------------- */
 %macro set_data_path;
   %global DATA_PATH;
-  %if %sysfunc(fileexist(/domino/datasets/local/oncology_poc/patients.csv)) %then %do;
-    %let DATA_PATH = /domino/datasets/local/oncology_poc;
+  %if %sysfunc(fileexist(/mnt/data/oncology_altair_poc/patients.csv)) %then %do;
+    %let DATA_PATH = /mnt/data/oncology_altair_poc;
     %put NOTE: Running on Domino - using dataset mount path: &DATA_PATH.;
   %end;
+  %else %if %sysfunc(fileexist(/domino/datasets/local/oncology_poc/patients.csv)) %then %do;
+    %let DATA_PATH = /domino/datasets/local/oncology_poc;
+    %put NOTE: Running on Domino (legacy path) - using: &DATA_PATH.;
+  %end;
   %else %do;
-    /* Resolve path relative to this SAS file's location */
-    %let DATA_PATH = %sysfunc(pathname(work))/../data;
-    /* Try project-relative path */
     %let _proj = %sysget(DOMINO_PROJECT_ROOT);
     %if "&_proj." ne "" %then %let DATA_PATH = &_proj./data;
     %else %let DATA_PATH = /Users/wasanthagamage/Documents/repos/AZ/altair/data;
