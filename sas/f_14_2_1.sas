@@ -27,14 +27,16 @@ data WORK._os_plot;
 run;
 
 /* -----------------------------------------------------------------------
-   Get median OS by arm for legend annotation
+   Get median OS by arm for legend annotation — suppress from report output
    ----------------------------------------------------------------------- */
+ods exclude all;
 ods output Quartiles=WORK._km_quartiles;
 proc lifetest data=WORK._os_plot method=km;
   time OS_MONTHS * OS_CNSR(1);
   strata TRTARM;
 run;
 ods output close;
+ods exclude none;
 
 proc sql noprint;
   select put(Estimate,5.1)

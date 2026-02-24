@@ -54,11 +54,12 @@ run;
 data WORK.DM;
   set WORK.DM_RAW;
 
-  /* Derive survival time in days from randomisation to death or last contact */
-  format RANDDATE RFENDTC date9. RFSTDTC date9.;
-  RANDDATE_DT  = input(RANDDATE, yymmdd10.);
-  RFSTDTC_DT   = input(RFSTDTC,  yymmdd10.);
-  RFENDTC_DT   = input(RFENDTC,  yymmdd10.);
+  /* Derive survival time in days from randomisation to death or last contact.
+     PROC IMPORT reads date columns as character (ISO 8601 strings) from CSV.
+     Convert each using input() with yymmdd10. informat. */
+  RANDDATE_DT  = input(strip(RANDDATE), yymmdd10.);
+  RFSTDTC_DT   = input(strip(RFSTDTC),  yymmdd10.);
+  RFENDTC_DT   = input(strip(RFENDTC),  yymmdd10.);
 
   /* Overall survival (days) */
   OS_DAYS = RFENDTC_DT - RFSTDTC_DT;

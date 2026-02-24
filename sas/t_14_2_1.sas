@@ -98,7 +98,8 @@ data WORK._orr_input;
   RESPONSE = (RESP_FL = "Y"); /* 1=responder */
 run;
 
-/* Get exact CI per arm */
+/* Get exact CI per arm — suppress raw PROC FREQ output from the report */
+ods exclude all;
 ods output BinomialCLs=WORK._orr_ci;
 proc freq data=WORK._orr_input;
   by TRTARM;
@@ -106,6 +107,7 @@ proc freq data=WORK._orr_input;
   exact binomial;
 run;
 ods output close;
+ods exclude none;
 
 /* Reshape CI output */
 proc sql noprint;
