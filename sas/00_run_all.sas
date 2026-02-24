@@ -35,18 +35,39 @@ options nodate nonumber ls=180 ps=65 mprint symbolgen msglevel=i;
    ----------------------------------------------------------------------- */
 %let DATA_MOUNT = /mnt/data/oncology_altair_poc;
 %let OUT_DIR    = &DATA_MOUNT./tfl;
+%let LOG_DIR    = &DATA_MOUNT./logs;
 
 options noxwait noxsync;
-x "mkdir -p &OUT_DIR.";
+x "mkdir -p &OUT_DIR. &LOG_DIR.";
 
-/* Verify the folder was created; warn if not */
+/* Verify tfl/ folder was created; warn if not */
 %if %sysfunc(fileexist(&OUT_DIR.)) = 0 %then %do;
   %put WARNING: Could not create &OUT_DIR. - check dataset is mounted read-write.;
-  %put WARNING: Falling back to &PROJ_ROOT./tfl;
+  %put WARNING: Falling back to &PROJ_ROOT./tfl and &PROJ_ROOT./logs;
   %let OUT_DIR = &PROJ_ROOT./tfl;
-  x "mkdir -p &OUT_DIR.";
+  %let LOG_DIR = &PROJ_ROOT./logs;
+  x "mkdir -p &OUT_DIR. &LOG_DIR.";
 %end;
-%put NOTE: [00_run_all] Output directory: &OUT_DIR.;
+%put NOTE: [00_run_all] TFL directory: &OUT_DIR.;
+%put NOTE: [00_run_all] Log directory: &LOG_DIR.;
+
+/* -----------------------------------------------------------------------
+   Redirect SAS log and listing to logs/ with a timestamped filename.
+   Each run produces its own pair of files — history is fully preserved.
+     .log  -> stdout equivalent: NOTE / WARNING / ERROR / macro trace
+     .lst  -> stderr equivalent: raw procedure listing not captured by ODS
+   PROC PRINTTO is reset at the end of this program.
+   ----------------------------------------------------------------------- */
+%let _runds  = %sysfunc(today(), yymmddn8.);         /* e.g. 20260224          */
+%let _runtm  = %sysfunc(time(),  tod8.);             /* e.g. 18:30:45          */
+%let _runtm  = %sysfunc(translate(&_runtm., -, :));  /* e.g. 18-30-45          */
+%let _logtag = &_runds._&_runtm.;                   /* e.g. 20260224_18-30-45 */
+
+proc printto
+  log  = "&LOG_DIR./run_&_logtag..log"
+  print= "&LOG_DIR./run_&_logtag..lst"
+  new;
+run;
 
 /* -----------------------------------------------------------------------
    Load macro library (must be available to all included programs)
@@ -123,6 +144,13 @@ ods _all_ close;
 
 %put NOTE: ============================================================;
 %put NOTE: POC TFLs Complete.;
-%put NOTE: HTML report: &OUT_DIR./oncology_poc_tfls.html;
-%put NOTE: PDF  report: &OUT_DIR./oncology_poc_tfls.pdf;
+%put NOTE: HTML report : &OUT_DIR./oncology_poc_tfls.html;
+%put NOTE: PDF  report : &OUT_DIR./oncology_poc_tfls.pdf;
+%put NOTE: SAS log     : &LOG_DIR./run_&_logtag..log;
+%put NOTE: SAS listing : &LOG_DIR./run_&_logtag..lst;
 %put NOTE: ============================================================;
+
+/* -----------------------------------------------------------------------
+   Reset log back to default (Domino console) — must be last statement
+   ----------------------------------------------------------------------- */
+proc printto; run;
