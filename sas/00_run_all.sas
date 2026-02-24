@@ -86,13 +86,13 @@ run;
 ods _all_ close;
 
 ods html   path="&OUT_DIR."
-           file="oncology_poc_tfls.html"
+           file="oncology_poc_tfls_&_logtag..html"
            style=Harvest
            gpath="&OUT_DIR."
            (url=none)
            options(pagebreakhtml="yes");
 
-ods pdf    file="&OUT_DIR./oncology_poc_tfls.pdf"
+ods pdf    file="&OUT_DIR./oncology_poc_tfls_&_logtag..pdf"
            style=Journal
            startpage=bygroup
            pdftoc=2
@@ -144,8 +144,8 @@ ods _all_ close;
 
 %put NOTE: ============================================================;
 %put NOTE: POC TFLs Complete.;
-%put NOTE: HTML report : &OUT_DIR./oncology_poc_tfls.html;
-%put NOTE: PDF  report : &OUT_DIR./oncology_poc_tfls.pdf;
+%put NOTE: HTML report : &OUT_DIR./oncology_poc_tfls_&_logtag..html;
+%put NOTE: PDF  report : &OUT_DIR./oncology_poc_tfls_&_logtag..pdf;
 %put NOTE: SAS log     : &LOG_DIR./run_&_logtag..log;
 %put NOTE: SAS listing : &LOG_DIR./run_&_logtag..lst;
 %put NOTE: ============================================================;
