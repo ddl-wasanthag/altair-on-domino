@@ -13,6 +13,9 @@
 # Output (generated at runtime — not source-controlled)
 output/
 
+# Local reference docs (not for version control)
+ONCOLOGY_GLOSSARY.md
+
 # Editor / IDE
 .vscode/
 .idea/
