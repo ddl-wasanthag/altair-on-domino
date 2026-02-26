@@ -2,14 +2,16 @@
   Program     : proc_r_example.sas  [JupyterLab version]
   Purpose     : Demonstrate PROC R in the Altair SLC Jupyter kernel.
 
-  Output in JupyterLab:
-    - R cat() / print() -> SAS log (visible in the Log tab)
-    - PROC PRINT etc    -> appears in the notebook cell output area
-    - DATA= option      -> passes named SAS datasets to R as data frames
-    - sas.put()         -> writes an R data frame back to a SAS dataset
+  Altair SLC notes:
+    - DATA= option is not supported on PROC R — datasets cannot be passed
+      directly. Use OS environment variables instead.
+    - options set= sets a real OS env var that R reads with Sys.getenv().
+    - R writes a result CSV; SAS reads it back with PROC IMPORT.
+    - cat() / print() output is visible in the Log tab.
+    - PROC PRINT output appears in the notebook cell output area.
 ==============================================================================*/
 
-/* Load shared macros (includes %set_language_paths) */
+/* Load shared macros */
 %let MACR_DIR = %sysget(DOMINO_PROJECT_ROOT)/sas/macros;
 %if "&MACR_DIR." = "/sas/macros" %then
   %let MACR_DIR = /mnt/code/sas/macros;
@@ -33,28 +35,30 @@
 %set_language_paths;
 
 /* -----------------------------------------------------------------------
-   Step 1: SAS reads the CSV
+   Pass paths to R via OS environment variables.
+   Macro variables are resolved here (SAS level) before R runs.
    ----------------------------------------------------------------------- */
-proc import datafile="&DATA_PATH./patients.csv"
-            out=WORK.patients
-            dbms=csv
-            replace;
-  getnames=yes;
-run;
-
-%put NOTE: WORK.patients has
-  %sysfunc(attrn(%sysfunc(open(WORK.patients)),nobs)) rows.;
+%let R_OUTPUT = /tmp/r_age_summary.csv;
+options set=SAS_R_INPUT  "&DATA_PATH./patients.csv";
+options set=SAS_R_OUTPUT "&R_OUTPUT.";
 
 /* -----------------------------------------------------------------------
-   Step 2: PROC R — DATA= passes WORK.patients as the R data frame
-   'patients'. sas.put() writes a result back to SAS.
-   cat() / print() go to the Log tab.
+   Step 1: PROC R — read CSV, compute summary, write result CSV
    ----------------------------------------------------------------------- */
-proc r data=WORK.patients;
+proc r;
 submit;
 
-# 'patients' data frame is automatically available via DATA=
-cat("Rows received from SAS:", nrow(patients), "\n")
+# Read paths from OS environment variables set by SAS
+input_path  <- Sys.getenv("SAS_R_INPUT")
+output_path <- Sys.getenv("SAS_R_OUTPUT")
+
+cat("Input  path:", input_path,  "\n")
+cat("Output path:", output_path, "\n")
+
+# Read directly from the CSV on the dataset mount
+patients <- read.csv(input_path, stringsAsFactors = FALSE)
+
+cat("\nRows read from CSV:", nrow(patients), "\n")
 print(patients[, c("USUBJID", "AGE", "SEX", "TRTARM", "ECOG")])
 
 # Compute age and ECOG summary by treatment arm
@@ -62,12 +66,12 @@ summary_df <- do.call(rbind, lapply(split(patients, patients$TRTARM), function(g
   data.frame(
     TRTARM   = g$TRTARM[1],
     N        = nrow(g),
-    Age_Mean = round(mean(g$AGE, na.rm=TRUE), 1),
-    Age_Min  = min(g$AGE,  na.rm=TRUE),
-    Age_Max  = max(g$AGE,  na.rm=TRUE),
-    ECOG0_N  = sum(g$ECOG == 0, na.rm=TRUE),
-    ECOG1_N  = sum(g$ECOG == 1, na.rm=TRUE),
-    ECOG2_N  = sum(g$ECOG == 2, na.rm=TRUE),
+    Age_Mean = round(mean(g$AGE, na.rm = TRUE), 1),
+    Age_Min  = min(g$AGE,  na.rm = TRUE),
+    Age_Max  = max(g$AGE,  na.rm = TRUE),
+    ECOG0_N  = sum(g$ECOG == 0, na.rm = TRUE),
+    ECOG1_N  = sum(g$ECOG == 1, na.rm = TRUE),
+    ECOG2_N  = sum(g$ECOG == 2, na.rm = TRUE),
     stringsAsFactors = FALSE
   )
 }))
@@ -76,15 +80,25 @@ rownames(summary_df) <- NULL
 cat("\nSummary computed in R:\n")
 print(summary_df)
 
-# Write back to SAS
-sas.put(summary_df, "WORK.r_age_summary")
-cat("WORK.r_age_summary written.\n")
+# Write result CSV for SAS to read back
+write.csv(summary_df, output_path, row.names = FALSE)
+cat("\nResult written to:", output_path, "\n")
 
 endsubmit;
 run;
 
 /* -----------------------------------------------------------------------
-   Step 3: Print the returned dataset — appears in cell output area
+   Step 2: SAS reads the result CSV back
+   ----------------------------------------------------------------------- */
+proc import datafile="&R_OUTPUT."
+            out=WORK.r_age_summary
+            dbms=csv
+            replace;
+  getnames=yes;
+run;
+
+/* -----------------------------------------------------------------------
+   Step 3: Print the result — appears in the notebook cell output area
    ----------------------------------------------------------------------- */
 proc print data=WORK.r_age_summary noobs;
   title "Age and ECOG Summary by Treatment Arm (computed in R)";
