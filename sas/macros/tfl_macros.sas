@@ -25,10 +25,10 @@
    ----------------------------------------------------------------------- */
 %macro set_language_paths;
   options set=PYTHONHOME "/opt/conda";
-  options set=PYTHONLIB  "/opt/conda/lib/libpython3.10.so.1.0";
+  options set=PYTHONLIB  "/opt/conda/lib/libpython3.10.so";
   options set=R_HOME     "/usr/lib/R";
   %put NOTE: [set_language_paths] PYTHONHOME = /opt/conda;
-  %put NOTE: [set_language_paths] PYTHONLIB  = /opt/conda/lib/libpython3.10.so.1.0;
+  %put NOTE: [set_language_paths] PYTHONLIB  = /opt/conda/lib/libpython3.10.so;
   %put NOTE: [set_language_paths] R_HOME     = /usr/lib/R;
 %mend set_language_paths;
 
