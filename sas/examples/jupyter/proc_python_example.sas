@@ -36,9 +36,15 @@
 /* Set PYTHONHOME / PYTHONLIB for Altair SLC on Domino */
 %set_language_paths;
 
-/* Pass the CSV path into Python via a macro variable */
-%let PY_INPUT  = &DATA_PATH./patients.csv;
+/* -----------------------------------------------------------------------
+   Pass paths to Python via OS environment variables.
+   options set= sets a real OS env var that Python reads with os.environ.
+   This avoids macro resolution inside the submit block, which Altair SLC
+   does not perform.
+   ----------------------------------------------------------------------- */
 %let PY_OUTPUT = /tmp/py_age_summary.csv;
+options set=SAS_PY_INPUT  "&DATA_PATH./patients.csv";
+options set=SAS_PY_OUTPUT "&PY_OUTPUT.";
 
 /* -----------------------------------------------------------------------
    Step 1: PROC PYTHON — read CSV, compute summary, write result CSV
@@ -46,11 +52,17 @@
 proc python;
 submit;
 
+import os
 import pandas as pd
 
-# &PY_INPUT. and &PY_OUTPUT. are resolved by the SAS macro processor
-# before this code reaches Python — they arrive as plain strings.
-df = pd.read_csv("&PY_INPUT.")
+# Read paths from OS environment variables set by SAS above
+input_path  = os.environ["SAS_PY_INPUT"]
+output_path = os.environ["SAS_PY_OUTPUT"]
+
+print(f"\nInput  path : {input_path}")
+print(f"Output path : {output_path}")
+
+df = pd.read_csv(input_path)
 
 print(f"\nRows read from CSV: {len(df)}")
 print(df[["USUBJID", "AGE", "SEX", "TRTARM", "ECOG"]].to_string(index=False))
@@ -73,9 +85,9 @@ summary["Age_Mean"] = summary["Age_Mean"].round(1)
 print("\nSummary computed in Python:")
 print(summary.to_string(index=False))
 
-# Write result to a temp CSV for SAS to read back
-summary.to_csv("&PY_OUTPUT.", index=False)
-print(f"\nResult written to: &PY_OUTPUT.")
+# Write result CSV for SAS to read back
+summary.to_csv(output_path, index=False)
+print(f"\nResult written to: {output_path}")
 
 endsubmit;
 run;
