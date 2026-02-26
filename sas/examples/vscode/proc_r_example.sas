@@ -1,16 +1,16 @@
 /*==============================================================================
-  Program     : proc_r_example.sas
-  Purpose     : Demonstrate PROC R — calling R from within SAS.
+  Program     : proc_r_example.sas  [VS Code version]
+  Purpose     : Demonstrate PROC R with the VS Code SAS extension.
 
-  What this shows:
-    1. SAS reads a CSV from the dataset mount into a SAS dataset
-    2. R receives the SAS dataset as a data frame (via DATA= option)
-    3. R does a quick summary and writes the result back to SAS (sas.put)
-    4. SAS prints the returned summary table
+  Output in VS Code:
+    - R cat() / print() -> Log panel  (View > SAS Log)
+    - PROC PRINT etc    -> Results panel  (the HTML viewer tab)
+    - DATA= option      -> passes named SAS datasets to R as data frames
+    - sas.put()         -> writes an R data frame back to a SAS dataset
 ==============================================================================*/
 
 /* -----------------------------------------------------------------------
-   Resolve dataset path (same logic as main programs)
+   Resolve dataset path
    ----------------------------------------------------------------------- */
 %macro set_data_path;
   %global DATA_PATH;
@@ -22,10 +22,9 @@
     %let DATA_PATH = %sysget(DOMINO_PROJECT_ROOT)/sdtm;
 %mend set_data_path;
 %set_data_path;
-%put NOTE: Reading CSV from: &DATA_PATH.;
 
 /* -----------------------------------------------------------------------
-   Step 1: SAS reads the CSV into WORK
+   Step 1: SAS reads the CSV
    ----------------------------------------------------------------------- */
 proc import datafile="&DATA_PATH./patients.csv"
             out=WORK.patients
@@ -34,49 +33,52 @@ proc import datafile="&DATA_PATH./patients.csv"
   getnames=yes;
 run;
 
+%put NOTE: WORK.patients has
+  %sysfunc(attrn(%sysfunc(open(WORK.patients)),nobs)) rows.;
+
 /* -----------------------------------------------------------------------
-   Step 2: Pass to R — compute a quick age summary by treatment arm.
-   DATA= makes WORK.patients available inside R as a data frame
-   named 'patients' (lowercase, no libname prefix).
-   sas.put() writes an R data frame back to a SAS dataset.
+   Step 2: PROC R — DATA= passes WORK.patients as the R data frame
+   'patients'. sas.put() writes a result back to SAS.
+   cat() / print() are visible in the VS Code Log panel.
    ----------------------------------------------------------------------- */
 proc r data=WORK.patients;
 submit;
 
-cat("Rows received:", nrow(patients), "\n")
+# 'patients' data frame is automatically available via DATA=
+cat("Rows received from SAS:", nrow(patients), "\n")
 print(patients[, c("USUBJID", "AGE", "SEX", "TRTARM", "ECOG")])
 
-# Quick summary: mean age, count, ECOG breakdown by treatment arm
-summary_df <- do.call(rbind, lapply(split(patients, patients$TRTARM), function(grp) {
+# Compute age and ECOG summary by treatment arm
+summary_df <- do.call(rbind, lapply(split(patients, patients$TRTARM), function(g) {
   data.frame(
-    TRTARM   = grp$TRTARM[1],
-    N        = nrow(grp),
-    Age_Mean = round(mean(grp$AGE, na.rm = TRUE), 1),
-    Age_Min  = min(grp$AGE,  na.rm = TRUE),
-    Age_Max  = max(grp$AGE,  na.rm = TRUE),
-    ECOG0_N  = sum(grp$ECOG == 0, na.rm = TRUE),
-    ECOG1_N  = sum(grp$ECOG == 1, na.rm = TRUE),
-    ECOG2_N  = sum(grp$ECOG == 2, na.rm = TRUE),
+    TRTARM   = g$TRTARM[1],
+    N        = nrow(g),
+    Age_Mean = round(mean(g$AGE, na.rm=TRUE), 1),
+    Age_Min  = min(g$AGE,  na.rm=TRUE),
+    Age_Max  = max(g$AGE,  na.rm=TRUE),
+    ECOG0_N  = sum(g$ECOG == 0, na.rm=TRUE),
+    ECOG1_N  = sum(g$ECOG == 1, na.rm=TRUE),
+    ECOG2_N  = sum(g$ECOG == 2, na.rm=TRUE),
     stringsAsFactors = FALSE
   )
 }))
 rownames(summary_df) <- NULL
 
-cat("\nSummary by Treatment Arm (computed in R):\n")
+cat("\nSummary computed in R:\n")
 print(summary_df)
 
 # Write back to SAS
 sas.put(summary_df, "WORK.r_age_summary")
-cat("\nResult written back to WORK.r_age_summary\n")
+cat("WORK.r_age_summary written.\n")
 
 endsubmit;
 run;
 
 /* -----------------------------------------------------------------------
-   Step 3: Print the summary that came back from R
+   Step 3: Print the returned dataset — appears in the VS Code Results panel
    ----------------------------------------------------------------------- */
 proc print data=WORK.r_age_summary noobs;
-  title "Age and ECOG Summary by Arm — computed in R, returned to SAS";
+  title "Age and ECOG Summary by Treatment Arm (computed in R)";
 run;
 title;
 

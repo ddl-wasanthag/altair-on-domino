@@ -137,10 +137,13 @@ ods graphics on / reset=all imagefmt=png;
 /* -----------------------------------------------------------------------
    Close ODS destinations
    ----------------------------------------------------------------------- */
+/* Close only the destinations we explicitly opened above.
+   Do NOT use ods _all_ close — that would also kill the VS Code /
+   Jupyter session-level HTML destination, making subsequent programs
+   produce no visible output. */
 ods html   close;
 ods pdf    close;
 ods graphics off;
-ods _all_ close;
 
 %put NOTE: ============================================================;
 %put NOTE: POC TFLs Complete.;
