@@ -16,6 +16,24 @@
 ==============================================================================*/
 
 /* -----------------------------------------------------------------------
+   %set_language_paths
+   Set environment variables required for PROC PYTHON and PROC R.
+   Paths are resolved from the actual Domino compute environment:
+     Python 3.10 (conda-forge) at /opt/conda
+     R 4.4.1 at /usr/bin/R  (R_HOME = /usr/lib/R)
+   Call this once before any PROC PYTHON or PROC R step.
+   ----------------------------------------------------------------------- */
+%macro set_language_paths;
+  options set=PYTHONHOME "/opt/conda";
+  options set=PYTHONLIB  "/opt/conda/lib/libpython3.10.so.1.0";
+  options set=R_HOME     "/usr/lib/R";
+  %put NOTE: [set_language_paths] PYTHONHOME = /opt/conda;
+  %put NOTE: [set_language_paths] PYTHONLIB  = /opt/conda/lib/libpython3.10.so.1.0;
+  %put NOTE: [set_language_paths] R_HOME     = /usr/lib/R;
+%mend set_language_paths;
+
+
+/* -----------------------------------------------------------------------
    %tfl_setup_metadata
    Call once per driver program to initialise global metadata variables.
    ----------------------------------------------------------------------- */

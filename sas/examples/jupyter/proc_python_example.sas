@@ -11,6 +11,12 @@
     - SAS.df2sd()     -> pandas DataFrame back to a SAS dataset
 ==============================================================================*/
 
+/* Load shared macros (includes %set_language_paths) */
+%let MACR_DIR = %sysget(DOMINO_PROJECT_ROOT)/sas/macros;
+%if "&MACR_DIR." = "/sas/macros" %then
+  %let MACR_DIR = /mnt/code/sas/macros;
+%include "&MACR_DIR./tfl_macros.sas";
+
 /* -----------------------------------------------------------------------
    Resolve dataset path
    ----------------------------------------------------------------------- */
@@ -24,6 +30,9 @@
     %let DATA_PATH = %sysget(DOMINO_PROJECT_ROOT)/sdtm;
 %mend set_data_path;
 %set_data_path;
+
+/* Set PYTHONHOME / PYTHONLIB / R_HOME for Altair SLC on Domino */
+%set_language_paths;
 
 /* -----------------------------------------------------------------------
    Step 1: SAS reads the CSV
