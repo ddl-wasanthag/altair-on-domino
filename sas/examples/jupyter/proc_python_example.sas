@@ -48,9 +48,9 @@ submit;
 
 import pandas as pd
 
-# Read directly from the CSV on the dataset mount
-csv_path = SASMacroVar("PY_INPUT")
-df = pd.read_csv(csv_path)
+# &PY_INPUT. and &PY_OUTPUT. are resolved by the SAS macro processor
+# before this code reaches Python — they arrive as plain strings.
+df = pd.read_csv("&PY_INPUT.")
 
 print(f"\nRows read from CSV: {len(df)}")
 print(df[["USUBJID", "AGE", "SEX", "TRTARM", "ECOG"]].to_string(index=False))
@@ -74,9 +74,8 @@ print("\nSummary computed in Python:")
 print(summary.to_string(index=False))
 
 # Write result to a temp CSV for SAS to read back
-out_path = SASMacroVar("PY_OUTPUT")
-summary.to_csv(out_path, index=False)
-print(f"\nResult written to: {out_path}")
+summary.to_csv("&PY_OUTPUT.", index=False)
+print(f"\nResult written to: &PY_OUTPUT.")
 
 endsubmit;
 run;
