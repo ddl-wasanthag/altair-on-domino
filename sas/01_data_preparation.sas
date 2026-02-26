@@ -5,8 +5,7 @@
               analysis-ready datasets. Demonstrates reading CSV data from the
               Domino dataset mount path.
 
-  Domino Dataset Path: /domino/datasets/local/oncology_poc/
-  Altair SLC / Domino POC - Data Preparation Step
+  Domino Dataset Path: /mnt/data/oncology_altair_poc/sdtm/
 
   Inputs    : patients.csv, tumor_measurements.csv, adverse_events.csv
   Outputs   : WORK.DM (Demographics), WORK.TR (Tumor Response),
@@ -61,8 +60,7 @@ data WORK.DM;
   set WORK.DM_RAW;
 
   /* Derive survival time in days from randomisation to death or last contact.
-     Altair SLC PROC IMPORT automatically applies YYMMDD10. informat to
-     date-like columns and stores them as numeric SAS dates — assign directly. */
+     PROC IMPORT stores date columns as numeric SAS dates — assign directly. */
   RANDDATE_DT  = RANDDATE;
   RFSTDTC_DT   = RFSTDTC;
   RFENDTC_DT   = RFENDTC;

@@ -1,14 +1,15 @@
 /*==============================================================================
   Program     : proc_r_example.sas  [JupyterLab version]
-  Purpose     : Demonstrate PROC R in the Altair SLC Jupyter kernel.
+  Purpose     : Demonstrate PROC R in the JupyterLab kernel.
 
-  Altair SLC notes:
-    - DATA= option is not supported on PROC R — datasets cannot be passed
-      directly. Use OS environment variables instead.
-    - options set= sets a real OS env var that R reads with Sys.getenv().
-    - R writes a result CSV; SAS reads it back with PROC IMPORT.
-    - cat() / print() output is visible in the Log tab.
-    - PROC PRINT output appears in the notebook cell output area.
+  Data exchange:
+    R reads the CSV directly from the dataset mount via OS environment
+    variables, processes it, and writes a result CSV to /tmp.
+    SAS reads the result back with PROC IMPORT.
+
+  Output in JupyterLab:
+    - cat() / print() -> Log tab
+    - PROC PRINT      -> cell output area
 ==============================================================================*/
 
 /* Load shared macros */
@@ -31,7 +32,7 @@
 %mend set_data_path;
 %set_data_path;
 
-/* Set PYTHONHOME / PYTHONLIB / R_HOME for Altair SLC on Domino */
+/* Set PYTHONHOME / PYTHONLIB / R_HOME */
 %set_language_paths;
 
 /* -----------------------------------------------------------------------

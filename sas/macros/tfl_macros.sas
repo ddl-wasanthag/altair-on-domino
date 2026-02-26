@@ -18,9 +18,6 @@
 /* -----------------------------------------------------------------------
    %set_language_paths
    Set environment variables required for PROC PYTHON and PROC R.
-   Paths are resolved from the actual Domino compute environment:
-     Python 3.10 (conda-forge) at /opt/conda
-     R 4.4.1 at /usr/bin/R  (R_HOME = /usr/lib/R)
    Call this once before any PROC PYTHON or PROC R step.
    ----------------------------------------------------------------------- */
 %macro set_language_paths;

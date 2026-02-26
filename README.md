@@ -67,7 +67,10 @@ altair/
 
 ### 1. Set up the Dataset
 
-1. In Domino, go to **Data → Datasets → Create Dataset**, name it `oncology_altair_poc`.
+This example assumes the default dataset for a project named `oncology_altair_poc`,
+which creates a default dataset also named `oncology_altair_poc`.
+
+1. In Domino, go to your project → **Datasets → Create Dataset**, name it `oncology_altair_poc`.
 2. Create a `sdtm/` subfolder and upload the three CSV files from `sdtm/`.
 3. Attach the dataset to your project with **read/write** access.
 
@@ -84,13 +87,8 @@ Create a Job with:
 
 ### 4. Run interactively (JupyterLab or VS Code)
 
-Open a workspace with the Altair SLC environment, open a terminal, and run:
-
-```bash
-sas /mnt/code/sas/00_run_all.sas
-```
-
-Or open `00_run_all.sas` in the Altair SLC notebook / VS Code SAS extension and run it directly.
+Open a workspace with the Altair SLC environment, open `00_run_all.sas` in the
+Altair SLC notebook or VS Code SAS extension, and run it.
 
 ### 5. View Outputs
 
@@ -178,19 +176,6 @@ proc import datafile="/tmp/py_age_summary.csv"
 run;
 ```
 
-### Altair SLC compatibility notes
-
-These patterns differ from standard SAS 9.4 / Viya because Altair SLC has a
-subset of their APIs:
-
-| Feature | Standard SAS Viya | Altair SLC |
-|---|---|---|
-| `SAS.sd2df()` / `SAS.df2sd()` | ✅ Available | ❌ `SAS` object not defined |
-| `SASMacroVar()` in Python | ✅ Available | ❌ Not defined |
-| `DATA=` option on `PROC R` | ✅ Available | ❌ Option not recognised |
-| `&macrovar.` inside `submit` block | ✅ Resolved | ❌ Passed as literal string |
-| `options set=` + `os.environ` / `Sys.getenv` | ✅ | ✅ **Use this pattern** |
-
 ### Environment variables required
 
 Set once in `tfl_macros.sas` via `%set_language_paths`:
@@ -204,24 +189,6 @@ options set=R_HOME     "/usr/lib/R";
 Confirmed paths for the Domino compute environment:
 - Python 3.10.14 (conda-forge) at `/opt/conda/bin/python`
 - R 4.4.1 at `/usr/bin/R`
-
----
-
-## Key SAS Features Demonstrated
-
-| Feature | Where used |
-|---|---|
-| `PROC IMPORT` | `01_data_preparation.sas` — reads SDTM CSVs |
-| `PROC SQL` | Data prep and all TFL programs — counts, flags, pivots |
-| `PROC MEANS` / `PROC FREQ` | `t_14_1_1.sas` — continuous and categorical summaries |
-| `PROC REPORT` with COMPUTE blocks | All TFL tables — conditional formatting, bold headers |
-| `PROC LIFETEST` | `f_14_2_1.sas` — Kaplan-Meier survival with at-risk table |
-| `PROC SGPANEL` / `PROC SGPLOT` | `f_14_2_2.sas` — waterfall and spider plots |
-| ODS HTML + PDF | `00_run_all.sas` — combined timestamped report output |
-| `PROC PRINTTO` | `00_run_all.sas` — separates .log and .lst output per run |
-| `PROC PYTHON` | `examples/` — Python pandas processing from SAS |
-| `PROC R` | `examples/` — R data frame processing from SAS |
-| `%SYSGET(DOMINO_PROJECT_ROOT)` | All programs — portable path resolution on Domino |
 
 ---
 

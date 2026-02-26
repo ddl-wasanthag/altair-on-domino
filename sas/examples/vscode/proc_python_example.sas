@@ -2,11 +2,10 @@
   Program     : proc_python_example.sas  [VS Code version]
   Purpose     : Demonstrate PROC PYTHON with the VS Code SAS extension.
 
-  Data exchange approach (Altair SLC compatible):
-    - SAS object (SAS.sd2df / SAS.df2sd) is NOT available in Altair SLC.
-    - Instead: Python reads the CSV directly from the dataset mount,
-      processes it, and writes a result CSV to /tmp.
-      SAS then reads the result back with PROC IMPORT.
+  Data exchange:
+    Python reads the CSV directly from the dataset mount,
+    processes it, and writes a result CSV to /tmp.
+    SAS reads the result back with PROC IMPORT.
 
   Output in VS Code:
     - print()    -> Log panel  (View > SAS Log)
@@ -33,14 +32,12 @@
 %mend set_data_path;
 %set_data_path;
 
-/* Set PYTHONHOME / PYTHONLIB for Altair SLC on Domino */
+/* Set PYTHONHOME / PYTHONLIB / R_HOME */
 %set_language_paths;
 
 /* -----------------------------------------------------------------------
    Pass paths to Python via OS environment variables.
    options set= sets a real OS env var that Python reads with os.environ.
-   This avoids macro resolution inside the submit block, which Altair SLC
-   does not perform.
    ----------------------------------------------------------------------- */
 %let PY_OUTPUT = /tmp/py_age_summary.csv;
 options set=SAS_PY_INPUT  "&DATA_PATH./patients.csv";

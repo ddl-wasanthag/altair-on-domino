@@ -9,10 +9,8 @@
     Section 14.2 - Efficacy Tables and Figures
     Section 16.2 - Patient Data Listings
 
-  Usage on Domino (Altair SLC compute environment):
+  Usage on Domino:
     sas /mnt/code/sas/00_run_all.sas
-
-  Altair SLC / Domino POC - Master Driver
 ==============================================================================*/
 
 options nodate nonumber ls=180 ps=65 mprint symbolgen msglevel=i;

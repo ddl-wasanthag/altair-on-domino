@@ -29,7 +29,6 @@ run;
 /* -----------------------------------------------------------------------
    Get median OS by arm for legend annotation — suppress from report output
    Use outsurv= to capture survival estimates, then derive median manually.
-   (Altair SLC PROC LIFETEST ODS table name for quartiles may differ.)
    ----------------------------------------------------------------------- */
 ods exclude all;
 proc lifetest data=WORK._os_plot method=km
